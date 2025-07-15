@@ -64,6 +64,84 @@ dynamic typed variable set to result of _dumpParser.FindOffsetByTypeName(ClassNa
 
 ### call to structGenerator.AddStruct(nestedStruct);
 
+
+## Strange case of Anti-AFK SDK structs
+
+It doesn't follow any standard past TarkovApplication structure and seems to mix match functions that I can't understand why they even need them.
+
+For example, FindClassWithEntityName could have been reused but instead the coder used two var fMethod & var fField to setup for FindClassByTypeName on AFKMonitor structure.
+Reading all the libraries, it's dealing with parsing opcodes in byte arrays and a custom row / collumn format in memory of the opcodes for each method. The returns are custom dnspy types that are very complex with poor naming conventions.
+
+Looking in dnspy.exe at a deobfuscated Assembly-CSharp, I can plainly see all the data attempting to be found by the dumper code, although I can't determine why the functions returning opcode types were used or how they are specifically determining offsets. There is a shit-ton of abstraction and layers.
+
+I will experiment with a simplier approach....
+
+```c#
+TypeDef MenuOperationClass = default;
+
+{
+    string name = "TarkovApplication";
+    SetVariableStatus(name);
+
+    StructureGenerator nestedStruct = new(name);
+    const string ClassName = "EFT.TarkovApplication";
+    string entity = "MenuOperation";
+
+    {
+        MenuOperationClass = _dnlibHelper.FindClassWithEntityName("StopAfkMonitor", DnlibHelper.SearchType.Method);
+        var offset = _dumpParser.FindOffsetByTypeName(ClassName, $"-.{MenuOperationClass.Humanize()}");
+        nestedStruct.AddOffset(entity, offset);
+    }
+
+    structGenerator.AddStruct(nestedStruct);
+}
+
+string AfkMonitorClassName = default;
+
+{
+    string name = "MenuOperation";
+    SetVariableStatus(name);
+
+    StructureGenerator nestedStruct = new(name);
+
+    string entity;
+
+    {
+        entity = "AfkMonitor";
+
+        var fMethod = _dnlibHelper.FindMethodByName(MenuOperationClass, "StopAfkMonitor");
+        var fField = _dnlibHelper.GetNthFieldReferencedByMethod(fMethod);
+        AfkMonitorClassName = fField.GetTypeName();
+        var offset = _dumpParser.FindOffsetByName(MenuOperationClass.Humanize(), fField.Humanize());
+        nestedStruct.AddOffset(entity, offset);
+    }
+
+    structGenerator.AddStruct(nestedStruct);
+}
+
+{
+    string name = "AfkMonitor";
+    SetVariableStatus(name);
+
+    StructureGenerator nestedStruct = new(name);
+
+    string entity;
+
+    var fClass = _dnlibHelper.FindClassByTypeName(AfkMonitorClassName);
+
+    {
+        entity = "Delay";
+
+        var fMethod = _dnlibHelper.FindMethodByName(fClass, "Start");
+        var fField = _dnlibHelper.GetNthFieldReferencedByMethod(fMethod, 3);
+        var offset = _dumpParser.FindOffsetByName(fClass.Humanize(), fField.Humanize());
+        nestedStruct.AddOffset(entity, offset);
+    }
+
+    structGenerator.AddStruct(nestedStruct);
+}
+```
+
 ## How to Use
 
 1. **Dump the Game**:
