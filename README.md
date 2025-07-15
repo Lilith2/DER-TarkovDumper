@@ -67,8 +67,6 @@ dynamic typed variable set to result of _dumpParser.FindOffsetByTypeName(ClassNa
 
 ## Strange case of Anti-AFK SDK structs
 
-It doesn't follow any standard past TarkovApplication structure and seems to mix match functions that I can't understand why they even need them.
-
 For example, FindClassWithEntityName could have been reused but instead the coder used two var fMethod & var fField to setup for FindClassByTypeName on AFKMonitor structure.
 Reading all the libraries, it's dealing with parsing opcodes in byte arrays and a custom row / collumn format in memory of the opcodes for each method. The returns are custom dnspy types that are very complex with poor naming conventions.
 
