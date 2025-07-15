@@ -5,16 +5,15 @@ using Spectre.Console;
 
 namespace TarkovDumper.Implementations
 {
-    public sealed class Arena : Processor
+    public sealed class ArenaProcessor : Processor
     {
-        private readonly ProcessorConfig _config;
+        private const string ASSEMBLY_INPUT_PATH = @"C:\Users\Butters\Desktop\dumper\input\DLL\arena\Assembly-CSharp.dll";
+        private const string DUMP_INPUT_PATH = @"C:\Users\Butters\Desktop\dumper\input\Larena\dump.txt";
+        private const string SDK_OUTPUT_PATH = @"C:\Users\Butters\Desktop\dumper\output\Larena\SDK.cs";
 
-        public Arena(ProcessorConfig config) : base(config.AssemblyInputPath, config.DumpInputPath)
-        {
-            _config = config;
-        }
+        public ArenaProcessor() : base(ASSEMBLY_INPUT_PATH, DUMP_INPUT_PATH) { }
 
-        public override void Run(StatusContext ctx)
+        public override void Run(StatusContext ctx) 
         {
             base.Run(ctx);
             var structGenerator_classNames = new StructureGenerator("ClassNames");
@@ -36,7 +35,7 @@ namespace TarkovDumper.Implementations
             AnsiConsole.WriteLine(StructureGenerator.GenerateReports(sgList));
 
             string plainSDK = StructureGenerator.GenerateNamespace("SDK", sgList, false);
-            File.WriteAllText(_config.SDKOutputPath, plainSDK);
+            File.WriteAllText(SDK_OUTPUT_PATH, plainSDK);
         }
 
         private void ProcessClassNames(StatusContext ctx, StructureGenerator structGenerator)

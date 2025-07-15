@@ -20,9 +20,6 @@
 		<PackageReference Include="dnlib" Version="4.4.0" />
 		<PackageReference Include="ICSharpCode.Decompiler" Version="8.2.0.7535" />
 		<PackageReference Include="Kokuban" Version="0.2.0" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.2" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.2" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Spectre.Console" Version="0.48.0" />
 	</ItemGroup>
 

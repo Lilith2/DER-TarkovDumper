@@ -53,7 +53,7 @@ namespace TarkovDumper
             if (typeDef != null)
             {
                 AddString(variable, outputFullNameAlt ? typeDef.HumanizeAlt(outputFullName) : typeDef.Humanize(outputFullName));
-                AddOffset($"{variable}_ClassToken", new(true, new($"{variable}_ClassToken", "MDToken", typeDef.MDToken.Raw)));
+                //AddOffset($"{variable}_ClassToken", new(true, new($"{variable}_ClassToken", "MDToken", typeDef.MDToken.Raw)));
 
                 ClassesProcessed++;
             }
@@ -70,7 +70,7 @@ namespace TarkovDumper
             if (methodDef != null)
             {
                 AddString(variable, methodDef.Humanize());
-                AddOffset($"{variable}_MethodToken", new(true, new($"{variable}_MethodToken", "MDToken", methodDef.MDToken.Raw)));
+                //AddOffset($"{variable}_MethodToken", new(true, new($"{variable}_MethodToken", "MDToken", methodDef.MDToken.Raw)));
 
                 MethodsProcessed++;
             }

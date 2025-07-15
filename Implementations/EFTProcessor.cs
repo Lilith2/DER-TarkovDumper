@@ -1,19 +1,17 @@
 ﻿using dnlib.DotNet;
 using Spectre.Console;
-using System.Diagnostics;
 
 // For Lone Tarkov
 
 namespace TarkovDumper.Implementations
 {
-    public sealed class Tarkov : Processor
+    public sealed class EFTProcessor : Processor
     {
-        private readonly ProcessorConfig _config;
+        private const string ASSEMBLY_INPUT_PATH = @"W:\tarkov RE guide\TarkovDumper-main\TarkovDumper-main\dumper\input\DLL\tarkov\Assembly-CSharp.dll";
+        private const string DUMP_INPUT_PATH = @"W:\tarkov RE guide\TarkovDumper-main\TarkovDumper-main\dumper\input\tarkov\dump.txt";
+        private const string SDK_OUTPUT_PATH = @"W:\tarkov RE guide\TarkovDumper-main\TarkovDumper-main\dumper\output\Ltarkov\SDK.cs";
 
-        public Tarkov(ProcessorConfig config) : base(config.AssemblyInputPath, config.DumpInputPath)
-        {
-            _config = config;
-        }
+        public EFTProcessor() : base(ASSEMBLY_INPUT_PATH, DUMP_INPUT_PATH) { }
 
         public override void Run(StatusContext ctx)
         {
@@ -37,7 +35,7 @@ namespace TarkovDumper.Implementations
             AnsiConsole.WriteLine(StructureGenerator.GenerateReports(sgList));
 
             string plainSDK = StructureGenerator.GenerateNamespace("SDK", sgList, false);
-            File.WriteAllText(_config.SDKOutputPath, plainSDK);
+            File.WriteAllText(SDK_OUTPUT_PATH, plainSDK);
         }
 
         private void ProcessClassNames(StatusContext ctx, StructureGenerator structGenerator)
@@ -48,8 +46,28 @@ namespace TarkovDumper.Implementations
                 ctx.Status(variable);
             }
 
+            /*
+             
+            format for class finder
+
+            entity = method name that anchors the finder to the class
+
+            variable is just the field name we decide that equals the serial number name of the class in dnspy. Often ClassName is used.
+
+            SetVariableStatus(variable); Resets the finder module to target our anchor (entity)
+
+            create a new StructureGenerator object where the parameter is the name you want the struct in sdk.cs
+
+            nestedStruct.AddClassName() should be first, it actually uses the finder module to get the method defined in string entity.
+
+            nestedStruct.AddString() add a string type field to the struct, defining the exact method name to target
+
+            structGenerator.AddStruct(nestedStruct)  ProcessClassNames parameter object to add our nested structure to the main file.
+             
+             */
+
             {
-                string entity = "SetLocalProfile";
+                string entity = "IsLocalStreamer";
                 string variable = "ClassName";
                 SetVariableStatus(variable);
 
@@ -60,23 +78,8 @@ namespace TarkovDumper.Implementations
 
                 structGenerator.AddStruct(nestedStruct);
             }
-            {
-                string name = "EFT.InventoryLogic.DogtagComponent";
-                string entity = "Nickname";
-                string variable = "MethodName";
-                SetVariableStatus(variable);
 
-                StructureGenerator nestedStruct = new("DogtagComponent");
-
-                var fClass = _dnlibHelper.FindClassByTypeName(name);
-                var fMethod = _dnlibHelper.FindMethodThatReturns(_decompiler_Basic, fClass, entity);
-
-                nestedStruct.AddMethodName(fMethod, variable, entity);
-
-                structGenerator.AddStruct(nestedStruct);
-            }
-
-            {
+            { // Thank you SoTMaulder for the paste !
                 string name = "EFT.UI.DragAndDrop.GridItemView";
                 string entity = "itemComponent.Nickname.SubstringIfNecessary";
                 string variable = "MethodName";
@@ -255,7 +258,7 @@ namespace TarkovDumper.Implementations
                 structGenerator.AddStruct(nestedStruct);
             }
 
-            string AfkMonitorClassName = default;
+            TypeDef AfkMonitorClass = default;
 
             {
                 string name = "MenuOperation";
@@ -263,14 +266,20 @@ namespace TarkovDumper.Implementations
 
                 StructureGenerator nestedStruct = new(name);
 
-                string entity;
+                List<DumpParser.EntitySearchListEntry> entries = new List<DumpParser.EntitySearchListEntry>
+                {
+                    new DumpParser.EntitySearchListEntry("Item1", DumpParser.SearchType.OffsetName),
+                    new DumpParser.EntitySearchListEntry("Item2", DumpParser.SearchType.OffsetName)
+                };
 
+                var groupName = _dumpParser.FindOffsetGroupWithEntities(entries);
+                var offset = _dumpParser.FindOffsetByName(groupName, "");
                 {
                     entity = "AfkMonitor";
 
-                    var fMethod = _dnlibHelper.FindMethodByName(MenuOperationClass, "StopAfkMonitor");
-                    var fField = _dnlibHelper.GetNthFieldReferencedByMethod(fMethod);
-                    AfkMonitorClassName = fField.GetTypeName();
+                    //var fMethod = _dnlibHelper.FindMethodByName(MenuOperationClass, "StopAfkMonitor");
+                    //var fField = _dnlibHelper.GetNthFieldReferencedByMethod(fMethod);
+                    //AfkMonitorClassName = fField.GetTypeName();
                     var offset = _dumpParser.FindOffsetByName(MenuOperationClass.Humanize(), fField.Humanize());
                     nestedStruct.AddOffset(entity, offset);
                 }
@@ -920,6 +929,7 @@ namespace TarkovDumper.Implementations
                 {
                     new("EFT.Interactive.ExfiltrationPoint[]", DumpParser.SearchType.TypeName),
                     new("EFT.Interactive.ScavExfiltrationPoint[]", DumpParser.SearchType.TypeName),
+                    new("EFT.Interactive.SecretExfiltrations.SecretExfiltrationPoint[]", DumpParser.SearchType.TypeName)
                 };
 
                 string offsetControllerClassName = _dumpParser.FindOffsetGroupWithEntities(searchEntities);
@@ -1013,77 +1023,7 @@ namespace TarkovDumper.Implementations
                 const string className = "EFT.Interactive.ExitTriggerSettings";
 
                 {
-                    entity = "Id";
-
-                    var offset = _dumpParser.FindOffsetByName(className, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
                     entity = "Name";
-
-                    var offset = _dumpParser.FindOffsetByName(className, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "EntryPoints";
-
-                    var offset = _dumpParser.FindOffsetByName(className, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "ExfiltrationType";
-
-                    var offset = _dumpParser.FindOffsetByName(className, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "ExfiltrationTime";
-
-                    var offset = _dumpParser.FindOffsetByName(className, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "PlayersCount";
-
-                    var offset = _dumpParser.FindOffsetByName(className, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "Chance";
-
-                    var offset = _dumpParser.FindOffsetByName(className, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "MinTime";
-
-                    var offset = _dumpParser.FindOffsetByName(className, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "MaxTime";
-
-                    var offset = _dumpParser.FindOffsetByName(className, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "StartTime";
-
-                    var offset = _dumpParser.FindOffsetByName(className, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "EventAvailable";
 
                     var offset = _dumpParser.FindOffsetByName(className, entity);
                     nestedStruct.AddOffset(entity, offset);
@@ -1743,166 +1683,6 @@ namespace TarkovDumper.Implementations
                     nestedStruct.AddOffset(entity, offset);
                 }
 
-                structGenerator.AddStruct(nestedStruct);
-            }
-
-            DumpParser.Result<DumpParser.OffsetData> PhysicalValueOffset = default;
-
-            {
-                string name = "Physical";
-                SetVariableStatus(name);
-
-                StructureGenerator nestedStruct = new(name);
-
-                string entity;
-
-                TypeDef fClass = _dnlibHelper.FindClassWithEntityName("SubscribeToAudibleEffects", DnlibHelper.SearchType.Method);
-
-                {
-                    entity = "Stamina";
-
-                    PhysicalValueOffset = _dumpParser.FindOffsetByName(fClass.Humanize(), entity);
-                    nestedStruct.AddOffset(entity, PhysicalValueOffset);
-                }
-
-                {
-                    entity = "HandsStamina";
-
-                    var offset = _dumpParser.FindOffsetByName(fClass.Humanize(), entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "Oxygen";
-
-                    var offset = _dumpParser.FindOffsetByName(fClass.Humanize(), entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "Overweight";
-
-                    var offset = _dumpParser.FindOffsetByName(fClass.Humanize(), entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "WalkOverweight";
-
-                    var offset = _dumpParser.FindOffsetByName(fClass.Humanize(), entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "WalkSpeedLimit";
-
-                    var offset = _dumpParser.FindOffsetByName(fClass.Humanize(), entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "Inertia";
-
-                    var offset = _dumpParser.FindOffsetByName(fClass.Humanize(), entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "WalkOverweightLimits";
-
-                    var offset = _dumpParser.FindOffsetByName(fClass.Humanize(), entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "BaseOverweightLimits";
-
-                    var offset = _dumpParser.FindOffsetByName(fClass.Humanize(), entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "SprintOverweightLimits";
-
-                    var offset = _dumpParser.FindOffsetByName(fClass.Humanize(), entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "SprintWeightFactor";
-
-                    MethodDef fMethod = _dnlibHelper.FindMethodByName(fClass, "get_SprintSpeed");
-                    FieldDef fField = _dnlibHelper.GetNthFieldReferencedByMethod(fMethod, 2);
-
-                    var offset = _dumpParser.FindOffsetByName(fClass.Humanize(), fField.GetFieldName());
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "SprintAcceleration";
-
-                    var offset = _dumpParser.FindOffsetByName(fClass.Humanize(), entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "PreSprintAcceleration";
-
-                    var offset = _dumpParser.FindOffsetByName(fClass.Humanize(), entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "IsOverweightA";
-
-                    const string substring = "&& weight > PreviousWeight";
-                    MethodDef fMethod = _dnlibHelper.FindMethodThatContains(_decompiler_Basic, fClass, substring);
-                    var decompiled = _decompiler_Basic.DecompileClassMethod(fClass, fMethod.Humanize());
-                    string fieldName = TextHelper.FindSubstringAndGoBackwards(decompiled.Body, substring, '(');
-
-                    var offset = _dumpParser.FindOffsetByName(fClass.Humanize(), fieldName);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "IsOverweightB";
-
-                    const string substring = "!= flag2)";
-                    MethodDef fMethod = _dnlibHelper.FindMethodThatContains(_decompiler_Basic, fClass, substring);
-                    var decompiled = _decompiler_Basic.DecompileClassMethod(fClass, fMethod.Humanize());
-                    string fieldName = TextHelper.FindSubstringAndGoBackwards(decompiled.Body, substring, '(');
-
-                    var offset = _dumpParser.FindOffsetByName(fClass.Humanize(), fieldName);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                structGenerator.AddStruct(nestedStruct);
-            }
-
-            {
-                string name = "PhysicalValue";
-                SetVariableStatus(name);
-
-                StructureGenerator nestedStruct = new(name);
-
-                string entity;
-
-                if (!PhysicalValueOffset.Success)
-                {
-                    nestedStruct.AddOffset(name, PhysicalValueOffset);
-                    goto end;
-                }
-
-                string PhysicalValueTypeName = PhysicalValueOffset.Value.TypeName.Replace("-.", "");
-
-                {
-                    entity = "Current";
-
-                    var offset = _dumpParser.FindOffsetByName(PhysicalValueTypeName, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-            end:
                 structGenerator.AddStruct(nestedStruct);
             }
 
@@ -3769,178 +3549,6 @@ namespace TarkovDumper.Implementations
                 }
 
             end:
-                structGenerator.AddStruct(nestedStruct);
-            }
-
-            {
-                string name = "WeatherController";
-                SetVariableStatus(name);
-
-                StructureGenerator nestedStruct = new(name);
-
-                string entity;
-
-                const string className = "EFT.Weather.WeatherController";
-
-                {
-                    entity = "WeatherDebug";
-
-                    var offset = _dumpParser.FindOffsetByName(className, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                structGenerator.AddStruct(nestedStruct);
-            }
-
-            {
-                string name = "WeatherDebug";
-                SetVariableStatus(name);
-
-                StructureGenerator nestedStruct = new(name);
-
-                string entity;
-
-                const string className = "EFT.Weather.WeatherDebug";
-
-                {
-                    entity = "isEnabled";
-
-                    var offset = _dumpParser.FindOffsetByName(className, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "WindMagnitude";
-
-                    var offset = _dumpParser.FindOffsetByName(className, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "CloudDensity";
-
-                    var offset = _dumpParser.FindOffsetByName(className, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "Fog";
-
-                    var offset = _dumpParser.FindOffsetByName(className, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "Rain";
-
-                    var offset = _dumpParser.FindOffsetByName(className, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "LightningThunderProbability";
-
-                    var offset = _dumpParser.FindOffsetByName(className, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                structGenerator.AddStruct(nestedStruct);
-            }
-
-            {
-                string name = "TOD_Scattering";
-                SetVariableStatus(name);
-
-                StructureGenerator nestedStruct = new(name);
-
-                string entity;
-
-                {
-                    entity = "sky";
-
-                    var offset = _dumpParser.FindOffsetByName(name, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                structGenerator.AddStruct(nestedStruct);
-            }
-
-            {
-                string name = "TOD_Sky";
-                SetVariableStatus(name);
-
-                StructureGenerator nestedStruct = new(name);
-
-                string entity;
-
-                {
-                    entity = "<Cycle>k__BackingField";
-
-                    var offset = _dumpParser.FindOffsetByName(name, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                {
-                    entity = "TOD_Components";
-
-                    var offset = _dumpParser.FindOffsetByTypeName(name, "-.TOD_Components");
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                structGenerator.AddStruct(nestedStruct);
-            }
-
-            {
-                string name = "TOD_CycleParameters";
-                SetVariableStatus(name);
-
-                StructureGenerator nestedStruct = new(name);
-
-                string entity;
-
-                {
-                    entity = "Hour";
-
-                    var offset = _dumpParser.FindOffsetByName(name, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                structGenerator.AddStruct(nestedStruct);
-            }
-
-            {
-                string name = "TOD_Components";
-                SetVariableStatus(name);
-
-                StructureGenerator nestedStruct = new(name);
-
-                string entity;
-
-                {
-                    entity = "TOD_Time";
-
-                    var offset = _dumpParser.FindOffsetByTypeName(name, "-.TOD_Time");
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
-                structGenerator.AddStruct(nestedStruct);
-            }
-
-            {
-                string name = "TOD_Time";
-                SetVariableStatus(name);
-
-                StructureGenerator nestedStruct = new(name);
-
-                string entity;
-
-                {
-                    entity = "LockCurrentTime";
-
-                    var offset = _dumpParser.FindOffsetByName(name, entity);
-                    nestedStruct.AddOffset(entity, offset);
-                }
-
                 structGenerator.AddStruct(nestedStruct);
             }
 
