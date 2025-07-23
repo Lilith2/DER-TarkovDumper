@@ -2452,23 +2452,15 @@ namespace TarkovDumper.Implementations
             }
 
             {
-                string name = "QuestConditionCounterTemplate";
+                string name = "QuestConditionLaunchFlare";
                 SetVariableStatus(name);
-
                 StructureGenerator nestedStruct = new(name);
-
-                string entity;
-
-                const string className = "ConditionCounterCreator.ConditionCounterTemplate";
-
+                const string className = "EFT.Quests.ConditionLaunchFlare";
                 {
-                    entity = "Conditions";
-
+                    string entity = "zoneId";
                     var offset = _dumpParser.FindOffsetByName(className, entity);
                     nestedStruct.AddOffset(entity, offset);
                 }
-
-                structGenerator.AddStruct(nestedStruct);
             }
 
             {
@@ -2498,6 +2490,48 @@ namespace TarkovDumper.Implementations
                     // Use the full name of the defining class (ConditionZone) and field name for the offset group
                     var zoneIdOffset = _dumpParser.FindOffsetByName(conditionZoneClass.FullName, zoneIdField.Name);
                     nestedStruct.AddOffset("zoneId", zoneIdOffset);
+                }
+
+                structGenerator.AddStruct(nestedStruct);
+            }
+
+            //QuestConditionInZone
+            {
+                string name = "QuestConditionZone";
+                SetVariableStatus(name);
+
+                StructureGenerator nestedStruct = new(name);
+
+                // Find the ConditionZone class
+                TypeDef conditionZoneClass = _dnlibHelper.FindClassByTypeName("EFT.Quests.ConditionInZone");
+
+                // Find the 'zoneId' field (defined in ConditionZone)
+                FieldDef zoneIdField = conditionZoneClass.Fields.FirstOrDefault(f => f.Name == "zoneIds");
+                if (zoneIdField != null)
+                {
+                    // Use the full name of the defining class (ConditionZone) and field name for the offset group
+                    var zoneIdOffset = _dumpParser.FindOffsetByName(conditionZoneClass.FullName, zoneIdField.Name);
+                    nestedStruct.AddOffset("zoneIds", zoneIdOffset);
+                }
+
+                structGenerator.AddStruct(nestedStruct);
+            }
+
+            {
+                string name = "QuestConditionCounterTemplate";
+                SetVariableStatus(name);
+
+                StructureGenerator nestedStruct = new(name);
+
+                string entity;
+
+                const string className = "ConditionCounterCreator.ConditionCounterTemplate";
+
+                {
+                    entity = "Conditions";
+
+                    var offset = _dumpParser.FindOffsetByName(className, entity);
+                    nestedStruct.AddOffset(entity, offset);
                 }
 
                 structGenerator.AddStruct(nestedStruct);
