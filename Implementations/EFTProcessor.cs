@@ -2496,9 +2496,8 @@ namespace TarkovDumper.Implementations
                 structGenerator.AddStruct(nestedStruct);
             }
 
-            //QuestConditionInZone
             {
-                string name = "QuestConditionZone";
+                string name = "QuestConditionInZone";
                 SetVariableStatus(name);
 
                 StructureGenerator nestedStruct = new(name);

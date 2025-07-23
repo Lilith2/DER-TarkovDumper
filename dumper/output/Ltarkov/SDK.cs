@@ -4,76 +4,61 @@ namespace SDK
 	{
 		public readonly partial struct StreamerMode
 		{
-			public const uint ClassName_ClassToken = 0x2001E4F; // MDToken
-			public const string ClassName = @"\uEA16";
+			public const string ClassName = @"\uE462";
 			public const string MethodName = @"IsLocalStreamer";
 		}
 
 		public readonly partial struct GridItemView
 		{
-			public const uint MethodName_MethodToken = 0x601448F; // MDToken
 			public const string MethodName = @"\uE013";
 		}
 
 		public readonly partial struct FixWildSpawnType
 		{
-			public const uint ClassName_ClassToken = 0x20025EB; // MDToken
 			public const string ClassName = @"\uED0C";
 			public const string MethodName = @"SetUpSpawnInfo";
 		}
 
 		public readonly partial struct NetworkContainer
 		{
-			public const uint ClassName_ClassToken = 0x200065C; // MDToken
 			public const string ClassName = @"\uE325";
 		}
 
 		public readonly partial struct AmmoTemplate
 		{
-			public const uint ClassName_ClassToken = 0x20029B5; // MDToken
-			public const uint MethodName_MethodToken = 0x600FDC6; // MDToken
 			public const string ClassName = @"\uEECB";
 			public const string MethodName = @"get_LoadUnloadModifier";
 		}
 
 		public readonly partial struct NoMalfunctions
 		{
-			public const uint ClassName_ClassToken = 0x2001772; // MDToken
-			public const uint GetMalfunctionState_MethodToken = 0x60094DF; // MDToken
 			public const string ClassName = @"EFT.Player+FirearmController";
 			public const string GetMalfunctionState = @"GetMalfunctionState";
 		}
 
 		public readonly partial struct GymHack
 		{
-			public const uint ClassName_ClassToken = 0x20020D1; // MDToken
-			public const uint MethodName_MethodToken = 0x600CE62; // MDToken
 			public const string ClassName = @"EFT.Hideout.ShrinkingCircleQTE";
 			public const string MethodName = @"\uE001";
 		}
 
 		public readonly partial struct OpticCameraManagerContainer
 		{
-			public const uint ClassName_ClassToken = 0x2002DDB; // MDToken
 			public const string ClassName = @"\uF08A";
 		}
 
 		public readonly partial struct ScreenManager
 		{
-			public const uint ClassName_ClassToken = 0x20034F1; // MDToken
 			public const string ClassName = @"\uF153";
 		}
 
 		public readonly partial struct FirearmController
 		{
-			public const uint ClassName_ClassToken = 0x2001772; // MDToken
 			public const string ClassName = @"EFT.Player+FirearmController";
 		}
 
 		public readonly partial struct ProceduralWeaponAnimation
 		{
-			public const uint ClassName_ClassToken = 0x20024AD; // MDToken
-			public const uint MethodName_MethodToken = 0x600E320; // MDToken
 			public const string ClassName = @"EFT.Animations.ProceduralWeaponAnimation";
 			public const string MethodName = @"get_ShotNeedsFovAdjustments";
 		}
@@ -481,6 +466,22 @@ namespace SDK
 			public const uint plantTime = 0x80; // Single
 		}
 
+		public readonly partial struct QuestConditionLaunchFlare
+		{
+			public const uint zoneId = 0x70; // String
+		}
+
+		public readonly partial struct QuestConditionZone
+		{
+			public const uint target = 0x70; // System.String[]
+			public const uint zoneId = 0x78; // String
+		}
+
+		public readonly partial struct QuestConditionInZone
+		{
+			public const uint zoneIds = 0x70; // System.String[]
+		}
+
 		public readonly partial struct QuestConditionCounterTemplate
 		{
 			public const uint Conditions = 0x10; // -.\uF1C9
@@ -649,7 +650,9 @@ namespace SDK
 
 		public readonly partial struct ModTemplate
 		{
+			public const uint ForbidMissingVitalParts = 0x149; // Boolean
 			public const uint Velocity = 0x168; // Single
+			public const uint RaidModdable = 0x16C; // Boolean
 		}
 
 		public readonly partial struct AmmoTemplate
@@ -663,6 +666,11 @@ namespace SDK
 		public readonly partial struct WeaponTemplate
 		{
 			public const uint Velocity = 0x258; // Single
+			public const uint AllowJam = 0x2E8; // Boolean
+			public const uint AllowFeed = 0x2E9; // Boolean
+			public const uint AllowMisfire = 0x2EA; // Boolean
+			public const uint AllowSlide = 0x2EB; // Boolean
+			public const uint AllowOverheat = 0x300; // Boolean
 		}
 
 		public readonly partial struct PlayerBody
