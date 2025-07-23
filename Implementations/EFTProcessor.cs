@@ -3403,6 +3403,10 @@ namespace TarkovDumper.Implementations
                     entity = "AllowSlide";
                     offset = _dumpParser.FindOffsetByName(className, entity);
                     nestedStruct.AddOffset(entity, offset);
+
+                    entity = "AllowOverheat";
+                    offset = _dumpParser.FindOffsetByName(className, entity);
+                    nestedStruct.AddOffset(entity, offset);
                 }
 
                 structGenerator.AddStruct(nestedStruct);
