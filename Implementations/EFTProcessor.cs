@@ -3316,9 +3316,16 @@ namespace TarkovDumper.Implementations
                 const string className = "EFT.InventoryLogic.ModTemplate";
 
                 {
-                    entity = "Velocity";
-
+                    entity = "ForbidMissingVitalParts";
                     var offset = _dumpParser.FindOffsetByName(className, entity);
+                    nestedStruct.AddOffset(entity, offset);
+
+                    entity = "Velocity";
+                    offset = _dumpParser.FindOffsetByName(className, entity);
+                    nestedStruct.AddOffset(entity, offset);
+
+                    entity = "RaidModdable";
+                    offset = _dumpParser.FindOffsetByName(className, entity);
                     nestedStruct.AddOffset(entity, offset);
                 }
 
