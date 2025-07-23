@@ -2486,8 +2486,8 @@ namespace TarkovDumper.Implementations
                 FieldDef targetField = conditionMultipleTargetsClass.Fields.FirstOrDefault(f => f.Name == "target");
                 if (targetField != null)
                 {
-                    // Use the humanized name of the defining class (ConditionMultipleTargets) for the offset group
-                    var targetOffset = _dumpParser.FindOffsetByName(conditionMultipleTargetsClass.Humanize(), targetField.Humanize());
+                    // Use the full name of the defining class (ConditionMultipleTargets) and field name for the offset group
+                    var targetOffset = _dumpParser.FindOffsetByName(conditionMultipleTargetsClass.FullName, targetField.Name);
                     nestedStruct.AddOffset("target", targetOffset);
                 }
 
@@ -2495,8 +2495,8 @@ namespace TarkovDumper.Implementations
                 FieldDef zoneIdField = conditionZoneClass.Fields.FirstOrDefault(f => f.Name == "zoneId");
                 if (zoneIdField != null)
                 {
-                    // Use the humanized name of the defining class (ConditionZone) for the offset group
-                    var zoneIdOffset = _dumpParser.FindOffsetByName(conditionZoneClass.Humanize(), zoneIdField.Humanize());
+                    // Use the full name of the defining class (ConditionZone) and field name for the offset group
+                    var zoneIdOffset = _dumpParser.FindOffsetByName(conditionZoneClass.FullName, zoneIdField.Name);
                     nestedStruct.AddOffset("zoneId", zoneIdOffset);
                 }
 
