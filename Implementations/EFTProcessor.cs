@@ -2479,21 +2479,23 @@ namespace TarkovDumper.Implementations
 
                 // Find the ConditionZone class
                 TypeDef conditionZoneClass = _dnlibHelper.FindClassByTypeName("EFT.Quests.ConditionZone");
+                // Find the ConditionMultipleTargets class (base class for 'target' field)
+                TypeDef conditionMultipleTargetsClass = _dnlibHelper.FindClassByTypeName("EFT.Quests.ConditionMultipleTargets");
 
-                // Find the 'target' field (inherited from ConditionMultipleTargets)
-                // Corrected: Iterate through fields to find by name
-                FieldDef targetField = conditionZoneClass.Fields.FirstOrDefault(f => f.Name == "target");
+                // Find the 'target' field (defined in ConditionMultipleTargets)
+                FieldDef targetField = conditionMultipleTargetsClass.Fields.FirstOrDefault(f => f.Name == "target");
                 if (targetField != null)
                 {
-                    var targetOffset = _dumpParser.FindOffsetByName(conditionZoneClass.Humanize(), targetField.Humanize());
+                    // Use the humanized name of the defining class (ConditionMultipleTargets) for the offset group
+                    var targetOffset = _dumpParser.FindOffsetByName(conditionMultipleTargetsClass.Humanize(), targetField.Humanize());
                     nestedStruct.AddOffset("target", targetOffset);
                 }
 
-                // Find the 'zoneId' field
-                // Corrected: Iterate through fields to find by name
+                // Find the 'zoneId' field (defined in ConditionZone)
                 FieldDef zoneIdField = conditionZoneClass.Fields.FirstOrDefault(f => f.Name == "zoneId");
                 if (zoneIdField != null)
                 {
+                    // Use the humanized name of the defining class (ConditionZone) for the offset group
                     var zoneIdOffset = _dumpParser.FindOffsetByName(conditionZoneClass.Humanize(), zoneIdField.Humanize());
                     nestedStruct.AddOffset("zoneId", zoneIdOffset);
                 }
