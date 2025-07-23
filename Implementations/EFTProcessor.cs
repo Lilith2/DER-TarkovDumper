@@ -258,7 +258,7 @@ namespace TarkovDumper.Implementations
                 structGenerator.AddStruct(nestedStruct);
             }
 
-            TypeDef AfkMonitorClass = default;
+            string AfkMonitorClassName = default;
 
             {
                 string name = "MenuOperation";
@@ -266,20 +266,14 @@ namespace TarkovDumper.Implementations
 
                 StructureGenerator nestedStruct = new(name);
 
-                List<DumpParser.EntitySearchListEntry> entries = new List<DumpParser.EntitySearchListEntry>
-                {
-                    new DumpParser.EntitySearchListEntry("Item1", DumpParser.SearchType.OffsetName),
-                    new DumpParser.EntitySearchListEntry("Item2", DumpParser.SearchType.OffsetName)
-                };
+                string entity;
 
-                var groupName = _dumpParser.FindOffsetGroupWithEntities(entries);
-                var offset = _dumpParser.FindOffsetByName(groupName, "");
                 {
                     entity = "AfkMonitor";
 
-                    //var fMethod = _dnlibHelper.FindMethodByName(MenuOperationClass, "StopAfkMonitor");
-                    //var fField = _dnlibHelper.GetNthFieldReferencedByMethod(fMethod);
-                    //AfkMonitorClassName = fField.GetTypeName();
+                    var fMethod = _dnlibHelper.FindMethodByName(MenuOperationClass, "StopAfkMonitor");
+                    var fField = _dnlibHelper.GetNthFieldReferencedByMethod(fMethod);
+                    AfkMonitorClassName = fField.GetTypeName();
                     var offset = _dumpParser.FindOffsetByName(MenuOperationClass.Humanize(), fField.Humanize());
                     nestedStruct.AddOffset(entity, offset);
                 }
@@ -2472,6 +2466,36 @@ namespace TarkovDumper.Implementations
 
                     var offset = _dumpParser.FindOffsetByName(className, entity);
                     nestedStruct.AddOffset(entity, offset);
+                }
+
+                structGenerator.AddStruct(nestedStruct);
+            }
+
+            {
+                string name = "QuestConditionZone";
+                SetVariableStatus(name);
+
+                StructureGenerator nestedStruct = new(name);
+
+                // Find the ConditionZone class
+                TypeDef conditionZoneClass = _dnlibHelper.FindClassByTypeName("EFT.Quests.ConditionZone");
+
+                // Find the 'target' field (inherited from ConditionMultipleTargets)
+                // Corrected: Iterate through fields to find by name
+                FieldDef targetField = conditionZoneClass.Fields.FirstOrDefault(f => f.Name == "target");
+                if (targetField != null)
+                {
+                    var targetOffset = _dumpParser.FindOffsetByName(conditionZoneClass.Humanize(), targetField.Humanize());
+                    nestedStruct.AddOffset("target", targetOffset);
+                }
+
+                // Find the 'zoneId' field
+                // Corrected: Iterate through fields to find by name
+                FieldDef zoneIdField = conditionZoneClass.Fields.FirstOrDefault(f => f.Name == "zoneId");
+                if (zoneIdField != null)
+                {
+                    var zoneIdOffset = _dumpParser.FindOffsetByName(conditionZoneClass.Humanize(), zoneIdField.Humanize());
+                    nestedStruct.AddOffset("zoneId", zoneIdOffset);
                 }
 
                 structGenerator.AddStruct(nestedStruct);
