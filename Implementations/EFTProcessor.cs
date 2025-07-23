@@ -7,9 +7,9 @@ namespace TarkovDumper.Implementations
 {
     public sealed class EFTProcessor : Processor
     {
-        private const string ASSEMBLY_INPUT_PATH = @"W:\tarkov RE guide\TarkovDumper-main\TarkovDumper-main\dumper\input\DLL\tarkov\Assembly-CSharp.dll";
-        private const string DUMP_INPUT_PATH = @"W:\tarkov RE guide\TarkovDumper-main\TarkovDumper-main\dumper\input\tarkov\dump.txt";
-        private const string SDK_OUTPUT_PATH = @"W:\tarkov RE guide\TarkovDumper-main\TarkovDumper-main\dumper\output\Ltarkov\SDK.cs";
+        private const string ASSEMBLY_INPUT_PATH = @"W:\current projects\tarky-dump\input\DLL\tarkov\Assembly-CSharp.dll";
+        private const string DUMP_INPUT_PATH = @"W:\current projects\tarky-dump\input\tarkov\dump.txt";
+        private const string SDK_OUTPUT_PATH = @"W:\current projects\tarky-dump\output\Ltarkov\SDK.cs";
 
         public EFTProcessor() : base(ASSEMBLY_INPUT_PATH, DUMP_INPUT_PATH) { }
 
