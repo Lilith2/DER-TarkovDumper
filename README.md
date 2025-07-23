@@ -1,3 +1,20 @@
+# How to Use
+
+1. **Dump the Game**:
+   - Use **Unispect** to dump the game data, I use DMA plugin for this from DER discord.
+   - Save the dump file for processing.
+
+2. **Prepare the Dumper**:
+   - Open source code in your favorite editor, define the path variables in EFTProcessor.cs file.
+   - Put dump file into directory as defined in file EFTProcessor.cs in variable DUMP_INPUT_PATH
+   - Put Assembly-CSharp.dll file into directory as defined in file EFTProcessor.cs in variable ASSEMBLY_INPUT_PATH
+3. **Run Dumper**
+   - Should create the sdk.cs file in the path you've previously set.
+
+## Requirements
+- **Unispect** for initial game dumping.
+
+
 # Docs
 
 ## Terminology I use to explain
@@ -64,94 +81,86 @@ dynamic typed variable set to result of _dumpParser.FindOffsetByTypeName(ClassNa
 
 ### call to structGenerator.AddStruct(nestedStruct);
 
+## Referenced fields, classes, methods, object instances - HOW TO - written by Trae AI IDE helper.
 
-## Strange case of Anti-AFK SDK structs
+**Starting Point: The Desired Information (`Delay` in `AfkMonitor`)**
+    The goal was to find the `Delay` value within the `AfkMonitor`. So, the first step would be to locate the `AfkMonitor` class itself. This might be done by searching for strings related to "AFK" or by observing its behavior in the game and then looking for code that controls that behavior.
 
-For example, FindClassWithEntityName could have been reused but instead the coder used two var fMethod & var fField to setup for FindClassByTypeName on AFKMonitor structure.
-Reading all the libraries, it's dealing with parsing opcodes in byte arrays and a custom row / collumn format in memory of the opcodes for each method. The returns are custom dnspy types that are very complex with poor naming conventions.
+2.  **Locating `AfkMonitor` and its `Delay` Field/Property**
+    Once `AfkMonitor` is found (let's say it's `GClassX`), the next step is to examine its members. The `Delay` would be identified as a field or property within `GClassX`.
 
-Looking in dnspy.exe at a deobfuscated Assembly-CSharp, I can plainly see all the data attempting to be found by the dumper code, although I can't determine why the functions returning opcode types were used or how they are specifically determining offsets. There is a shit-ton of abstraction and layers.
+3.  **Tracing Usage: Who *uses* `AfkMonitor`?**
+    This is the crucial step. In DnSpy (or any decompiler), you can right-click on a class, method, or field and look for "Analyze" or "Find Usages" (or similar functionality). This tells you what other parts of the code interact with `AfkMonitor`.
 
-I will experiment with a simplier approach....
+    *   If `AfkMonitor` is instantiated or referenced by `MenuOperation` (e.g., `MenuOperation` has a field of type `GClassX` or calls methods on `GClassX`), then you've found the next link in the chain.
+
+4.  **Tracing Further: Who *uses* `MenuOperation`?**
+    You repeat the process. If `MenuOperation` (let's say `GClassY`) is found to be used or instantiated by `TarkovApplication` (e.g., `TarkovApplication` has a field of type `GClassY` or calls methods on `GClassY`), then you've found another link.
+
+5.  **Reaching a Known/Root Class (`TarkovApplication`)**
+    Eventually, this tracing process leads back to a more fundamental or well-known class, like `TarkovApplication`. `TarkovApplication` is often a central entry point or a top-level manager in Unity games, making it a logical root for many game-related functionalities.
+
+**Why it's not obvious in DnSpy at first glance:**
+
+*   **Obfuscation**: As we discussed, the names are obfuscated. You're not always looking for `TarkovApplication.MenuOperation.AfkMonitor.Delay`. You're looking for `GClassA.GClassB.GClassC.Delay`.
+*   **Indirect References**: The connection might not be a direct field. It could be passed as a method argument, returned from a function, or stored in a collection. The "Find Usages" feature of a decompiler is essential for uncovering these indirect links.
+*   **Dynamic Instantiation**: Classes might be instantiated dynamically, making it harder to see direct `new` calls. However, the `_dnlibHelper.FindClassWithEntityName` method is designed to handle this by looking for specific methods or properties that uniquely identify a class, regardless of how it's instantiated.
 
 ```c#
-TypeDef MenuOperationClass = default;
-
+public void StopAfkMonitor()
 {
-    string name = "TarkovApplication";
-    SetVariableStatus(name);
-
-    StructureGenerator nestedStruct = new(name);
-    const string ClassName = "EFT.TarkovApplication";
-    string entity = "MenuOperation";
-
-    {
-        MenuOperationClass = _dnlibHelper.FindClassWithEntityName("StopAfkMonitor", DnlibHelper.SearchType.Method);
-        var offset = _dumpParser.FindOffsetByTypeName(ClassName, $"-.{MenuOperationClass.Humanize()}");
-        nestedStruct.AddOffset(entity, offset);
-    }
-
-    structGenerator.AddStruct(nestedStruct);
+this.gclass2134_0.Stop();
 }
+//The class after this keyword is actually a field of the type it's named.
 
-string AfkMonitorClassName = default;
+// GClass2134
 
+// Token: 0x0600AEBD RID: 44733 RVA: 0x004E423C File Offset: 0x004E243C
+
+public void Start()
 {
-    string name = "MenuOperation";
-    SetVariableStatus(name);
-
-    StructureGenerator nestedStruct = new(name);
-
-    string entity;
-
+    CancellationTokenSource cancellationTokenSource = this.cancellationTokenSource_0;
+    if (cancellationTokenSource != null && !cancellationTokenSource.IsCancellationRequested)
     {
-        entity = "AfkMonitor";
-
-        var fMethod = _dnlibHelper.FindMethodByName(MenuOperationClass, "StopAfkMonitor");
-        var fField = _dnlibHelper.GetNthFieldReferencedByMethod(fMethod);
-        AfkMonitorClassName = fField.GetTypeName();
-        var offset = _dumpParser.FindOffsetByName(MenuOperationClass.Humanize(), fField.Humanize());
-        nestedStruct.AddOffset(entity, offset);
+        Debug.LogError("AFKMonitor is already running.");
+        return;
     }
-
-    structGenerator.AddStruct(nestedStruct);
-}
-
-{
-    string name = "AfkMonitor";
-    SetVariableStatus(name);
-
-    StructureGenerator nestedStruct = new(name);
-
-    string entity;
-
-    var fClass = _dnlibHelper.FindClassByTypeName(AfkMonitorClassName);
-
+    this.float_0 = Singleton<GClass1541>.Instance.AFKTimeoutSeconds;
+    if (!this.float_0.Positive())
     {
-        entity = "Delay";
-
-        var fMethod = _dnlibHelper.FindMethodByName(fClass, "Start");
-        var fField = _dnlibHelper.GetNthFieldReferencedByMethod(fMethod, 3);
-        var offset = _dumpParser.FindOffsetByName(fClass.Humanize(), fField.Humanize());
-        nestedStruct.AddOffset(entity, offset);
+        Debug.LogError("WARNING! AFK timeout is not set.");
+        return;
     }
-
-    structGenerator.AddStruct(nestedStruct);
+    this.method_0().HandleExceptions();
 }
 ```
+Your observation that `this.gclass2134_0` is a field of type `GClass2134` within the class containing `StopAfkMonitor` (which we identified as `GClass2141` / `MenuOperationClass`) is spot on.
+Here's how this piece of information fits into the dumper's logic, specifically the line we saw earlier:
 
-## How to Use
+```c#
+// ... existing code ...
+{
+	entity = "AfkMonitor";
 
-1. **Dump the Game**:
-   - Use **Unispect** to dump the game data, I use DMA plugin for this from DER discord.
-   - Save the dump file for processing.
+	var fMethod =_dnlibHelper.FindMethodByName(MenuOperationClass,"StopAfkMonitor");
+	var fField = _dnlibHelper.GetNthFieldReferencedByMethod(fMethod);
+	AfkMonitorClassName = fField.GetTypeName();
+	// ... existing code ...
+}
+// ... existing code ...
+```
 
-2. **Prepare the Dumper**:
-   - Open source code in your favorite editor, define the path variables in EFTProcessor.cs file.
-   - Put dump file into directory as defined in file EFTProcessor.cs in variable DUMP_INPUT_PATH
-   - Put Assembly-CSharp.dll file into directory as defined in file EFTProcessor.cs in variable ASSEMBLY_INPUT_PATH
-3. **Run Dumper**
-   - Should create the sdk.cs file in the path you've previously set.
+1.  **`fMethod = _dnlibHelper.FindMethodByName(MenuOperationClass, "StopAfkMonitor");`**
+    This line successfully finds the `StopAfkMonitor` method within `MenuOperationClass` (which is `GClass2141`).
 
-## Requirements
-- **Unispect** for initial game dumping.
+2.  **`fField = _dnlibHelper.GetNthFieldReferencedByMethod(fMethod);`**
+    This is the critical part. When the dumper calls `GetNthFieldReferencedByMethod` on `StopAfkMonitor`, it's looking at the IL instructions of that method. The instruction `this.gclass2134_0.Stop();` directly references the field `gclass2134_0`. Since this is the *first* field referenced in the method (assuming no other fields are referenced before it), `GetNthFieldReferencedByMethod` (with `N` defaulting to 1) would correctly identify `gclass2134_0`.
+
+3.  **`AfkMonitorClassName = fField.GetTypeName();`**
+    Once `fField` is identified as `gclass2134_0`, `GetTypeName()` would return its type, which is `GClass2134`. This is how the dumper programmatically discovers that `GClass2134` is the actual `AfkMonitor` class, even though its name is obfuscated.
+
+This confirms the chain:
+
+*   `TarkovApplication` contains/uses `MenuOperation` (`GClass2141`).
+*   `MenuOperation` (`GClass2141`) contains/uses `AfkMonitor` (`GClass2134`), and this usage is identifiable by `StopAfkMonitor` referencing a field of type `GClass2134`.
+*   `AfkMonitor` (`GClass2134`) contains the `Delay` (likely `float_0` in your provided `Start` method) which is then extracted.
