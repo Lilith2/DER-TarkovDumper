@@ -3385,8 +3385,23 @@ namespace TarkovDumper.Implementations
 
                 {
                     entity = "Velocity";
-
                     var offset = _dumpParser.FindOffsetByName(className, entity);
+                    nestedStruct.AddOffset(entity, offset);
+
+                    entity = "AllowJam";
+                    offset = _dumpParser.FindOffsetByName(className, entity);
+                    nestedStruct.AddOffset(entity, offset);
+
+                    entity = "AllowFeed";
+                    offset = _dumpParser.FindOffsetByName(className, entity);
+                    nestedStruct.AddOffset(entity, offset);
+
+                    entity = "AllowMisfire";
+                    offset = _dumpParser.FindOffsetByName(className, entity);
+                    nestedStruct.AddOffset(entity, offset);
+
+                    entity = "AllowSlide";
+                    offset = _dumpParser.FindOffsetByName(className, entity);
                     nestedStruct.AddOffset(entity, offset);
                 }
 
