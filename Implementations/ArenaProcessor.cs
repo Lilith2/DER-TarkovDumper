@@ -7,9 +7,9 @@ namespace TarkovDumper.Implementations
 {
     public sealed class ArenaProcessor : Processor
     {
-        private const string ASSEMBLY_INPUT_PATH = @"C:\Users\Butters\Desktop\dumper\input\DLL\arena\Assembly-CSharp.dll";
-        private const string DUMP_INPUT_PATH = @"C:\Users\Butters\Desktop\dumper\input\Larena\dump.txt";
-        private const string SDK_OUTPUT_PATH = @"C:\Users\Butters\Desktop\dumper\output\Larena\SDK.cs";
+        private const string ASSEMBLY_INPUT_PATH = @"W:\current projects\tarky-dump\input\DLL\arena\Assembly-CSharp.dll";
+        private const string DUMP_INPUT_PATH = @"W:\current projects\tarky-dump\input\arena\arena_dump.txt";
+        private const string SDK_OUTPUT_PATH = @"W:\current projects\tarky-dump\output\Larena\SDK.cs";
 
         public ArenaProcessor() : base(ASSEMBLY_INPUT_PATH, DUMP_INPUT_PATH) { }
 
@@ -584,6 +584,16 @@ namespace TarkovDumper.Implementations
                 }
 
                 {
+                    entity = "Player";
+                    TypeDef foundClass = _dnlibHelper.FindClassByTypeName(ObservedHealthControllerTypeName);
+                    MethodDef foundMethod = _dnlibHelper.FindMethodByName(foundClass, "get_Player"); //		\uE473.get_Player() : Player @06004CFC 				\uE473.\uE026 : Player @0400430C        where \uE026 is EFT.Player in class \uE473
+                    FieldDef fField = _dnlibHelper.GetNthFieldReferencedByMethod(foundMethod);
+                    var offset = _dumpParser.FindOffsetByName(ObservedHealthControllerTypeName, fField.GetFieldName());
+
+                    nestedStruct.AddOffset(entity, offset);
+                }
+
+                {
                     entity = "HealthStatus";
 
                     var offset = _dumpParser.FindOffsetByName(ObservedHealthControllerTypeName, entity);
@@ -1009,9 +1019,15 @@ namespace TarkovDumper.Implementations
 
                 {
                     entity = "_rotation";
-
                     var offset = _dumpParser.FindOffsetByName(className, entity);
                     nestedStruct.AddOffset(entity, offset);
+
+                    entity = "_player";
+                    offset = _dumpParser.FindOffsetByName(className, entity);
+                    nestedStruct.AddOffset(entity, offset);
+
+
+
                 }
 
                 structGenerator.AddStruct(nestedStruct);

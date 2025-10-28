@@ -30,7 +30,7 @@ namespace TarkovDumper
                     processor = choice switch
                     {
                         "Lone Tarkov" => new EFTProcessor(),
-                        //"Lone Arena" => new ArenaProcessor(),
+                        "Lone Arena" => new ArenaProcessor(),
                         //"Evo" => new EvoProcessor(),
                         _ => throw new InvalidOperationException("Invalid processor selection.")
                     };
