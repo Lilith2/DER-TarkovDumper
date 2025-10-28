@@ -573,6 +573,13 @@ namespace TarkovDumper.Implementations
                 string ObservedHealthControllerTypeName = ObservedHealthControllerOffset.Value.TypeName.Replace("-.", "");
 
                 {
+                    entity = "Player";
+
+                    var offset = _dumpParser.FindOffsetByTypeName(ObservedHealthControllerTypeName, "EFT.NextObservedPlayer.ObservedPlayerView");
+                    nestedStruct.AddOffset(entity, offset);
+                }
+
+                {
                     entity = "PlayerCorpse";
 
                     TypeDef foundClass = _dnlibHelper.FindClassByTypeName(ObservedHealthControllerTypeName);
@@ -583,15 +590,15 @@ namespace TarkovDumper.Implementations
                     nestedStruct.AddOffset(entity, offset);
                 }
 
-                {
-                    entity = "Player";
-                    TypeDef foundClass = _dnlibHelper.FindClassByTypeName(ObservedHealthControllerTypeName);
-                    MethodDef foundMethod = _dnlibHelper.FindMethodByName(foundClass, "get_Player"); //		\uE473.get_Player() : Player @06004CFC 				\uE473.\uE026 : Player @0400430C        where \uE026 is EFT.Player in class \uE473
-                    FieldDef fField = _dnlibHelper.GetNthFieldReferencedByMethod(foundMethod);
-                    var offset = _dumpParser.FindOffsetByName(ObservedHealthControllerTypeName, fField.GetFieldName());
+                //{
+                //    entity = "Player";
+                //    TypeDef foundClass = _dnlibHelper.FindClassByTypeName(ObservedHealthControllerTypeName);
+                //    MethodDef foundMethod = _dnlibHelper.FindMethodByName(foundClass, "get_Player"); //		\uE473.get_Player() : Player @06004CFC 				\uE473.\uE026 : Player @0400430C        where \uE026 is EFT.Player in class \uE473
+                //    FieldDef fField = _dnlibHelper.GetNthFieldReferencedByMethod(foundMethod);
+                //    var offset = _dumpParser.FindOffsetByName(ObservedHealthControllerTypeName, fField.GetFieldName());
 
-                    nestedStruct.AddOffset(entity, offset);
-                }
+                //    nestedStruct.AddOffset(entity, offset);
+                //}
 
                 {
                     entity = "HealthStatus";
