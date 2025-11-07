@@ -5,7 +5,18 @@
    - Save the dump file for processing.
 
 2. **Prepare the Dumper**:
-   - Open source code in your favorite editor, define the path variables in EFTProcessor.cs file.
+   - Open source code in your favorite editor, define the path variables in EFTProcessor.cs file. Directory structure like shown bellow. The parent folder "input" can be located anywhere on your PC, same goes for "output". Just make sure the hardcode the paths in the EFTProcessor.cs file or use some kind of universial file finder instead.
+* input
+  * arena
+    * arena_dump.txt
+  * DLL
+    * arena
+	  * arena_assembly-csharp.dll
+	* tarkov
+      * eft_assembly-csharp.dll
+  * tarkov
+    * dump.txt
+  
    - Put dump file into directory as defined in file EFTProcessor.cs in variable DUMP_INPUT_PATH
    - Put Assembly-CSharp.dll file into directory as defined in file EFTProcessor.cs in variable ASSEMBLY_INPUT_PATH
 3. **Run Dumper**
