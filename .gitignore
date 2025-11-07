@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 dumper/input/DLL/tarkov/Assembly-CSharp.dll
+/dumper/input
